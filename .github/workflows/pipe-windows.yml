@@ -1,0 +1,60 @@
+# Pipe Música PC: compila el instalador de Windows (.msi) en los servidores de GitHub.
+# Se ejecuta a mano desde la pestaña Actions, o solo al subir cambios a "dev".
+name: Compilar Pipe Música PC (Windows)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["dev"]
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Instalador de Windows
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Instalar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "microsoft"
+
+      - name: Preparar Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Versión libre (sin reportes de errores ni claves)
+        run: |
+          sed -i 's/^isFullBuild=true/isFullBuild=false/' gradle.properties
+          touch local.properties
+
+      - name: Descargar el reproductor (libmpv) para Windows
+        run: |
+          mkdir -p mpv-natives
+          curl -fsSL -o mpv-win.tar.gz \
+            https://github.com/maxrave-dev/simpmusic-files/releases/download/abc/mpv-natives-windows-x64.tar.gz
+          echo "256f17cf402c7583b8684d5a7cf585ad1b59695469219671f4887b9d8d272a99  mpv-win.tar.gz" | sha256sum -c -
+          tar -xzf mpv-win.tar.gz -C mpv-natives
+          ls mpv-natives/windows-x64
+
+      - name: Lista de licencias
+        run: ./gradlew --no-configuration-cache exportLibraryDefinitions
+
+      - name: Compilar el instalador
+        run: ./gradlew --no-configuration-cache :desktopApp:packageMsi
+
+      - name: Guardar el instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: PipeMusica-PC-Windows
+          path: desktopApp/build/compose/binaries/main/msi/*.msi
