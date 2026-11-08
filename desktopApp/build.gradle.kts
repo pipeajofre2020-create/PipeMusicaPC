@@ -167,7 +167,10 @@ compose.desktop {
             }
             targetFormats(*listTarget.toTypedArray())
             modules("jdk.unsupported")
-            packageName = "SimpMusic"
+            // Pipe Música: own name so it installs beside SimpMusic
+            packageName = "PipeMusica"
+            vendor = "Pipe Musica"
+            description = "Pipe Música para PC"
             macOS {
                 val formatedDate =
                     Instant.now().let {
@@ -209,6 +212,13 @@ compose.desktop {
             }
             windows {
                 includeAllModules = true
+                // Pipe Música: a fixed upgrade code lets a new MSI replace the installed version.
+                upgradeUuid = "bd7b9697-2655-50ad-994a-8e6a4bf97fa7"
+                menuGroup = "Pipe Música"
+                shortcut = true
+                menu = true
+                perUserInstall = true
+                dirChooser = true
                 packageVersion =
                     libs.versions.version.name
                         .get()

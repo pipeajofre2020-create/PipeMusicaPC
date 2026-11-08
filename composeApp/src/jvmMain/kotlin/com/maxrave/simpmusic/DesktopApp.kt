@@ -1,5 +1,6 @@
 package com.maxrave.simpmusic
 
+import com.maxrave.simpmusic.pipe.PipeSync
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -268,9 +269,10 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
     desktopNotificationManager.initialize()
 
     val sharedViewModel = getKoin().get<SharedViewModel>()
-    if (sharedViewModel.shouldCheckForUpdate()) {
-        sharedViewModel.checkForUpdate()
-    }
+    // Pipe Música: no update check against SimpMusic's releases; this build updates from its own fork.
+
+    // Pipe Música: keep likes, downloads and the "Descargas Pipe" playlist in step with the phone.
+    PipeSync.start()
 
     // Connect deep link handler to SharedViewModel
     DesktopDeepLinkHandler.listener = { intent ->
